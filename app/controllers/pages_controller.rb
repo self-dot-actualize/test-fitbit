@@ -20,6 +20,23 @@ class PagesController < ApplicationController
     redirect_to "/data"
   end
 
+  def fitbit_refresh
+    if session[:refresh_token]
+      @response = Unirest.post(
+        "https://api.fitbit.com/oauth2/token?client_id=ENV['FITBIT_CLIENT_ID']&grant_type=refresh_token&refresh_token=#{session[:refresh_token]}",
+        headers: { 
+          "Accept" => "application/x-www-form-urlencoded",
+          "Authorization" => "Basic MjI4SEw3OmEyMWRlZjBmZTIyZTMyMmJmNDc4Yjk1YWYwOWIzZDhl"
+        }
+      ).body
+      session[:access_token] = @response['access_token']
+      session[:refresh_token] = @response['refresh_token']
+      redirect_to "/data"
+    else
+      redirect_to "/register"
+    end
+  end
+
   def data
     @profile = Unirest.get(
       "https://api.fitbit.com/1/user/-/profile.json",
